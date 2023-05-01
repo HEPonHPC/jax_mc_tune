@@ -5,7 +5,8 @@ import numpy as np
 
 class InputReader:
     def __init__(self,
-                 dtype: jnp.dtype = jnp.float32):
+                 dtype: jnp.dtype = jnp.float32
+                 ):
         self.dtype = dtype
         self.X: jnp.ndarray = None  # shape (num_of_mc_runs, num_parameters)
         self.Y: jnp.ndarray = None  # shape (num_of_bins * num_of_mc_runs)
@@ -15,6 +16,7 @@ class InputReader:
         self.obs_weights: np.ndarray = None  # shape (num_of_bins)
 
         self.num_of_orgin_bins: int = 0
+        self.num_of_bins: int = 0   # after filtering invalid bins
         self.num_parameters: int = 0
         self.num_of_mc_runs: int = 0
 
@@ -32,7 +34,7 @@ class InputReader:
         self.Y_err = jnp.array(f['total_err'][:], dtype=self.dtype)
         self.bin_ids = np.array([x.decode() for x in f.get("index")[:]])
         self.obs_weights = jnp.ones(jnp.shape(self.bin_ids))
-        self.num_of_orgin_bins = len(self.bin_ids)
+        self.num_of_orgin_bins = self.num_of_bins = len(self.bin_ids)
 
     def read_yoda(self, filename: str):
         raise NotImplementedError
@@ -42,7 +44,7 @@ class InputReader:
 
     def __str__(self) -> str:
         return "InputReader: \n" \
-               f"  num of measurement bins: {self.num_of_orgin_bins}\n" \
+               f"  num of measurement bins: {self.num_of_bins}\n" \
                f"  num of generator paramters: {self.num_parameters}\n" \
                f"  num of MC runs: {self.num_of_mc_runs}\n" \
                f"  dtype: {self.dtype}\n"
