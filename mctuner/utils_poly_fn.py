@@ -28,8 +28,8 @@ class PolyFnUtils:
         """
         if self.num_params > 1 and (len(array.shape) != 2
                                     or array.shape[0] != self.num_params):
-            raise ValueError("array must be of shape (num_params, num_of_mc_runs) -> "
-                             f"({self.num_params}, num_of_mc_runs))")
+            raise ValueError("Expected input shape"
+                             f"({self.num_params}, N)), got {array.shape}")
 
         # check number of points greater than or equal to the number of coefficients
         if self.num_params == 1:

@@ -21,7 +21,7 @@ class SurrogateModel:
 
         # model_weights represents the weights of the surrogate model
         # the key word is reader.name + "_" + bin_idx
-        self.model_weights: Dict[str, np.ndarray] = None
+        self.model_weights: Dict[str, np.ndarray] = {}
         self.reader = None
 
         # self.X: np.ndarray = None   # X represents the generator parameters, [num_of_combinations_of_parameters]
@@ -43,7 +43,12 @@ class SurrogateModel:
     def hessian(self, model_weight: jnp.ndarray, *args):
         return np.array(self.hessian_fn(self.objective)(model_weight, *args), dtype=np.float64)
 
-    def fit(self, reader: InputReader, bin_idx: int):
+    def get_bin_str(self, bin_idx: int) -> str:
+        if self.reader is None:
+            raise ValueError("Reader is not set. Run set_reader() first.")
+        return self.reader.name + "_" + str(bin_idx)
+
+    def fit(self, bin_idx: int):
         raise NotImplementedError
 
     def minimize(self, bin_str: str, *args):
@@ -68,7 +73,7 @@ class SurrogateModel:
             self.model_weights = np.load(f)
 
 
-class monomialSurrogateModel(SurrogateModel):
+class MonomialSurrogateModel(SurrogateModel):
     def __init__(self,
                  order: int = 2,
                  use_mc_error: bool = False,
@@ -87,7 +92,7 @@ class monomialSurrogateModel(SurrogateModel):
 
     def set_reader(self, reader):
         super().set_reader(reader)
-        poly_fn = PolyFnUtils()
+        poly_fn = PolyFnUtils(self.reader.num_parameters)
         self.VM = poly_fn.vandermonde(self.reader.X, self.order)
 
     def predict(self, model_weight: jnp.ndarray) -> jnp.ndarray:
@@ -95,13 +100,14 @@ class monomialSurrogateModel(SurrogateModel):
 
     def objective(self, model_weight: jnp.ndarray, Y, Y_err) -> jnp.ndarray:
         residule = (self.predict(model_weight) - Y)**2
-        return residule / Y_err**2 if self.use_mc_error and Y_err is not None else residule
+        result = residule / Y_err**2 if self.use_mc_error and Y_err is not None else residule
+        return jnp.sum(result)
 
     def fit(self, bin_idx: int):
         if self.VM is None:
             raise ValueError("VM is None, please set reader first")
 
-        bin_str = self.reader.name + "_" + str(bin_idx)
+        bin_str = self.get_bin_str(bin_idx)
         self.model_weights[bin_str] = np.zeros(self.VM.shape[1])
         Y = self.reader.Y[bin_idx]
         Y_err = self.reader.Y_err[bin_idx] if self.use_mc_error else None
