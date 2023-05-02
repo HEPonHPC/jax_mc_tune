@@ -1,1 +1,4 @@
-jax
+numpy
+pandas
+scipy
+h5py
