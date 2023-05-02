@@ -17,29 +17,29 @@ class PolyFnUtils:
                     array: Union[np.ndarray, jnp.ndarray],
                     order: int) -> np.ndarray:
         """Construct the Vandermonde matrix.
-        array: 2D array of shape (num_parameters, number_of_points)
-            number of points are the MC runs.
+        array: 2D array of shape (num_parameters, num_of_mc_runs)
+
         order: int
             the maximum order of the monomial.
 
         Returns
         -------
-        V: 2D array of shape (num_points, num_coeffs)
+        V: 2D array of shape (num_of_mc_runs, num_coeffs)
         """
         if self.num_params > 1 and (len(array.shape) != 2
                                     or array.shape[0] != self.num_params):
-            raise ValueError("array must be of shape (num_params, num_points) -> "
-                             f"({self.num_params}, num_points))")
+            raise ValueError("array must be of shape (num_params, num_of_mc_runs) -> "
+                             f"({self.num_params}, num_of_mc_runs))")
 
         # check number of points greater than or equal to the number of coefficients
         if self.num_params == 1:
-            num_points = array.shape[0]
+            num_of_mc_runs = array.shape[0]
         else:
-            num_points = array.shape[1]
+            num_of_mc_runs = array.shape[1]
 
         minimum_num_coeff = self.num_coeffiencies(order)
-        assert num_points >= minimum_num_coeff, \
-            f"number of points ({num_points}) must be greater than or equal to " \
+        assert num_of_mc_runs >= minimum_num_coeff, \
+            f"number of points ({num_of_mc_runs}) must be greater than or equal to " \
             f"the number of coefficients ({minimum_num_coeff})"
 
         # in 1D case, simply return the Vandermonde matrix
