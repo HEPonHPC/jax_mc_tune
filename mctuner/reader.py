@@ -5,10 +5,12 @@ import numpy as np
 
 class InputReader:
     def __init__(self,
-                 dtype: jnp.dtype = jnp.float32
+                 dtype: jnp.dtype = jnp.float32,
+                 name: str = "InputReader"
                  ):
         self.dtype = dtype
-        self.X: jnp.ndarray = None  # shape (num_of_mc_runs, num_parameters)
+        self.name = name
+        self.X: jnp.ndarray = None  # shape (num_parameters, num_of_mc_runs)
         self.Y: jnp.ndarray = None  # shape (num_of_bins * num_of_mc_runs)
         self.Y_err: jnp.ndarray = None      # shape (num_of_bins * num_of_mc_runs)
         self.param_names: np.ndarray = None  # shape (num_parameters)
@@ -24,8 +26,8 @@ class InputReader:
         f = h5py.File(filename, 'r')
 
         # generator parameters
-        self.X = jnp.array(f["params"][:], dtype=self.dtype)
-        self.num_of_mc_runs, self.num_parameters = self.X.shape
+        self.X = jnp.array(f["params"][:], dtype=self.dtype).T
+        self.num_parameters, self.num_of_mc_runs = self.X.shape
 
         self.param_names = np.array(f['params'].attrs['names']).astype(str)
 
