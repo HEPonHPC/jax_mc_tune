@@ -21,5 +21,8 @@ class InnerLoopOptimizer:
         if self.filters is not None:
             self.reader = self.filters.apply(self.reader)
 
-        self.surrogate.fit(self.reader)
+        num_of_bins = self.reader.num_of_bins
+        for bin_idx in range(num_of_bins):
+            self.surrogate.fit(self.reader, bin_idx=bin_idx)
+
         self.surrogate.save(self.outdir + "/surrogate_model")

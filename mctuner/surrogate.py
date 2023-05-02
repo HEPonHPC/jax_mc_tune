@@ -1,5 +1,4 @@
 from typing import Dict
-from .reader import InputReader
 
 import jax
 import jax.numpy as jnp
